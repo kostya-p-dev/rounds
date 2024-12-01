@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unique Rounds Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .round {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Unique Rounds Generator</h1>
+    <form id="userForm">
+        <label for="users">Enter user names (one per line):</label>
+        <textarea id="users" placeholder="Enter names here..."></textarea>
+        <button type="submit">Generate Rounds</button>
+    </form>
+    <div class="results" id="results"></div>
+
+    <script>
+        function generateUniqueRounds(users) {
+            const rounds = [];
+            const numUsers = users.length;
+
+            if (numUsers < 2) {
+                throw new Error("At least two users are required to generate rounds.");
+            }
+
+            const usedPairs = new Set();
+
+            for (let round = 0; round < numUsers - 1; round++) {
+                const currentRound = [];
+                for (let i = 0; i < numUsers; i++) {
+                    const sender = users[i];
+                    const recipientIndex = (i + round + 1) % numUsers;
+                    const recipient = users[recipientIndex];
+                    const pairKey = `${sender}->${recipient}`;
+                    const reversePairKey = `${recipient}->${sender}`;
+
+                    if (!usedPairs.has(pairKey) && !usedPairs.has(reversePairKey)) {
+                        currentRound.push(`${sender} → ${recipient}`);
+                        usedPairs.add(pairKey);
+                    }
+                }
+                rounds.push(currentRound);
+            }
+
+            return rounds;
+        }
+
+        document.getElementById('userForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const userInput = document.getElementById('users').value.trim();
+            const users = userInput.split('\n').map(name => name.trim()).filter(name => name);
+
+            if (users.length < 2) {
+                alert("Please enter at least two user names.");
+                return;
+            }
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = "";
+
+            try {
+                const rounds = generateUniqueRounds(users);
+
+                rounds.forEach((round, index) => {
+                    const roundDiv = document.createElement('div');
+                    roundDiv.classList.add('round');
+                    roundDiv.innerHTML = `<strong>Round ${index + 1}:</strong><br>${round.join('<br>')}`;
+                    resultsDiv.appendChild(roundDiv);
+                });
+            } catch (error) {
+                resultsDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
